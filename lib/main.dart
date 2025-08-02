@@ -1,6 +1,8 @@
 import 'package:databases/features/authentication/index.dart';
 import 'package:databases/features/home/screens/home_screen.dart';
 import 'package:databases/features/home/providers/theme_provider.dart';
+import 'package:databases/features/todo/providers/todo_provider.dart';
+import 'package:databases/features/todo/providers/firestore_todo_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,8 +20,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => TodoProvider()),
+        ChangeNotifierProvider(create: (context) => FirestoreTodoProvider()),
+      ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           final isDarkMode = themeProvider.isDarkMode;
