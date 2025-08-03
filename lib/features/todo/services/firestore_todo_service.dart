@@ -7,7 +7,11 @@ class FirestoreTodoService {
   final AuthService _authService = AuthService();
 
   // Get current user ID
-  String? get _currentUserId => _authService.currentUser?.uid;
+  String? get _currentUserId {
+    final userId = _authService.currentUser?.uid;
+    print('FirestoreTodoService: Current user ID: $userId'); // Debug log
+    return userId;
+  }
 
   // Get todos collection
   CollectionReference<Map<String, dynamic>> get _todosCollection => 
@@ -15,17 +19,25 @@ class FirestoreTodoService {
 
   // Stream todos for current user
   Stream<List<Todo>> getTodosStream() {
+    print('FirestoreTodoService: Getting todos stream...'); // Debug log
+    print('FirestoreTodoService: Current user ID: $_currentUserId'); // Debug log
+    
     if (_currentUserId == null) {
+      print('FirestoreTodoService: No user ID, returning empty stream'); // Debug log
       return Stream.value([]);
     }
 
+    print('FirestoreTodoService: Creating stream for user: $_currentUserId'); // Debug log
     return _todosCollection
         .where('userId', isEqualTo: _currentUserId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
+          print('FirestoreTodoService: Received ${snapshot.docs.length} todos from Firestore'); // Debug log
+          print('FirestoreTodoService: Document IDs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
           return snapshot.docs.map((doc) {
             final data = doc.data();
+            print('FirestoreTodoService: Document data: $data'); // Debug log
             return Todo.fromMap({
               ...data,
               'id': doc.id,
@@ -39,7 +51,11 @@ class FirestoreTodoService {
     required String title,
     required String description,
   }) async {
+    print('FirestoreTodoService: Starting addTodo...'); // Debug log
+    print('FirestoreTodoService: Current user ID: $_currentUserId'); // Debug log
+    
     if (_currentUserId == null) {
+      print('FirestoreTodoService: User not authenticated!'); // Debug log
       throw Exception('User not authenticated');
     }
 
@@ -52,7 +68,15 @@ class FirestoreTodoService {
       userId: _currentUserId!,
     );
 
-    await _todosCollection.add(todo.toMap());
+    print('FirestoreTodoService: Todo object created: ${todo.toMap()}'); // Debug log
+
+    try {
+      final docRef = await _todosCollection.add(todo.toMap());
+      print('FirestoreTodoService: Todo added successfully with ID: ${docRef.id}'); // Debug log
+    } catch (e) {
+      print('FirestoreTodoService: Error adding todo: $e'); // Debug log
+      rethrow;
+    }
   }
 
   // Update todo
@@ -125,6 +149,25 @@ class FirestoreTodoService {
   // Get todos count
   Stream<int> getTodosCountStream() {
     return getTodosStream().map((todos) => todos.length);
+  }
+
+  // Debug method to check all todos without user filter
+  Stream<List<Todo>> getAllTodosStream() {
+    print('FirestoreTodoService: Getting ALL todos (no user filter)...'); // Debug log
+    return _todosCollection
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          print('FirestoreTodoService: Received ${snapshot.docs.length} ALL todos from Firestore'); // Debug log
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            print('FirestoreTodoService: ALL todo data: $data'); // Debug log
+            return Todo.fromMap({
+              ...data,
+              'id': doc.id,
+            });
+          }).toList();
+        });
   }
 
   // Get completed todos count

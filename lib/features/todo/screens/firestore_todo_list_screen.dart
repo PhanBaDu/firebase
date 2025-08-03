@@ -138,17 +138,32 @@ class _FirestoreTodoListScreenState extends State<FirestoreTodoListScreen> {
               ),
             ),
             // Actions Section
-            if (todoProvider.completedCount > 0) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CupertinoButton(
-                  color: AppColors.error,
-                  onPressed: _showDeleteCompletedDialog,
-                  child: const Text('Xóa tất cả đã hoàn thành'),
-                ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                                     Expanded(
+                     child: CupertinoButton(
+                       color: AppColors.getButtonPrimary(isDarkMode),
+                       onPressed: () {
+                         todoProvider.loadAllTodos();
+                       },
+                       child: const Text('Load All Todos'),
+                     ),
+                   ),
+                  const SizedBox(width: 8),
+                  if (todoProvider.completedCount > 0)
+                    Expanded(
+                      child: CupertinoButton(
+                        color: AppColors.error,
+                        onPressed: _showDeleteCompletedDialog,
+                        child: const Text('Xóa đã hoàn thành'),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
+            const SizedBox(height: 16),
             // Todo List
             Expanded(
               child: todoProvider.isLoading

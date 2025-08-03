@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:databases/features/todo/providers/todo_provider.dart';
+import 'package:databases/features/todo/providers/firestore_todo_provider.dart';
 import 'package:databases/features/home/providers/theme_provider.dart';
 import 'package:databases/features/home/constants/app_colors.dart';
 
@@ -54,7 +54,7 @@ class _AddTodoModalState extends State<AddTodoModal> {
     });
 
     try {
-      await context.read<TodoProvider>().addTodo(
+      await context.read<FirestoreTodoProvider>().addTodo(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
       );
